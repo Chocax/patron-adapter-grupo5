@@ -25,7 +25,8 @@
 
 - [El problema](#-el-problema)
 - [La solución: las piezas del patrón](#-la-solución-las-piezas-del-patrón)
-- [Cómo ejecutarlo](#-cómo-ejecutarlo)
+- [Guía de instalación y ejecución](#-guía-de-instalación-y-ejecución)
+- [Solución de problemas](#-solución-de-problemas)
 - [La prueba de fuego: conectar iFood en vivo](#-la-prueba-de-fuego-conectar-ifood-en-vivo)
 - [Estructura del proyecto](#-estructura-del-proyecto)
 - [Principios que se ven en el código](#-principios-que-se-ven-en-el-código)
@@ -126,9 +127,46 @@ sequenceDiagram
     Note over C: La cocina nunca supo que era Rappi
 ```
 
-## 🚀 Cómo ejecutarlo
+## 🧰 Guía de instalación y ejecución
 
-**Requisito:** Java **JDK 17 o superior** (comprueba con `java -version`). No necesita Maven, Gradle ni librerías externas.
+Solo necesitas **Java (JDK 17 o superior)**. No hace falta Maven, Gradle, base de datos ni librerías externas.
+
+### Paso 1 · Instalar Java
+
+> [!TIP]
+> Si ya tienes Java, salta al paso 2. Para saberlo, abre una terminal y escribe `javac -version`. Si sale `javac 17` o un número mayor, ya estás listo.
+
+Necesitas el **JDK** (kit de desarrollo), no solo el JRE, porque el proyecto se compila en tu máquina.
+
+| Sistema | Cómo instalarlo |
+|---|---|
+| **Windows** | En PowerShell o CMD: `winget install EclipseAdoptium.Temurin.17.JDK`<br>O descarga el instalador `.msi` desde [adoptium.net](https://adoptium.net/temurin/releases/?version=17) y, durante la instalación, activa la opción **"Set JAVA_HOME"** / **"Add to PATH"**. |
+| **macOS** | Con [Homebrew](https://brew.sh): `brew install --cask temurin@17`<br>O el instalador `.pkg` desde [adoptium.net](https://adoptium.net/temurin/releases/?version=17). |
+| **Linux (Ubuntu/Debian)** | `sudo apt update && sudo apt install openjdk-17-jdk` |
+
+Cierra y vuelve a abrir la terminal, y comprueba que quedó instalado:
+
+```bash
+java -version
+javac -version
+```
+
+Ambos deben mostrar versión **17 o superior**.
+
+### Paso 2 · Descargar el proyecto
+
+**Opción A: sin Git (la más fácil).** Arriba en esta página, botón verde **`<> Code`** → **Download ZIP**. Descomprime el archivo donde quieras.
+
+**Opción B: con Git.**
+
+```bash
+git clone https://github.com/Chocax/patron-adapter-grupo5.git
+cd patron-adapter-grupo5
+```
+
+### Paso 3 · Ejecutar
+
+Elige la forma que prefieras. Todas compilan el código y arrancan el servidor.
 
 | Sistema | Comando |
 |---|---|
@@ -137,7 +175,21 @@ sequenceDiagram
 | A mano | `javac -encoding UTF-8 -d out $(find src -name "*.java")` y luego `java -cp out app.Main` |
 | IDE | Abre la carpeta, marca `src` como código fuente y ejecuta `app.Main` |
 
-Luego abre **http://localhost:14080** en el navegador y pide domicilios con los botones. Cada ticket también se imprime en la consola.
+Cuando todo va bien, la consola muestra:
+
+```
+==============================================
+  Demo Patron Adapter - Cocina de domicilios
+  Abre en el navegador:  http://localhost:14080
+  Plataformas conectadas: [rappi, didi]
+==============================================
+```
+
+### Paso 4 · Abrir la demo
+
+Abre **http://localhost:14080** en el navegador y pide domicilios con los botones. Cada ticket también se imprime en la consola.
+
+Para **detener** el programa, vuelve a la consola y presiona `Ctrl + C`.
 
 <p align="center">
   <img src="docs/img/demo.png" alt="Captura de la demo con pedidos en la pantalla de cocina" width="90%">
@@ -161,6 +213,65 @@ Para conectarlo:
 3. Detén el programa (`Ctrl + C`) y vuelve a ejecutarlo.
 
 iFood ya funciona, y **`PantallaCocina` no se tocó ni una línea**. Eso es el principio **Abierto/Cerrado**: el sistema queda abierto a nuevas plataformas y cerrado a modificaciones.
+
+## 🩺 Solución de problemas
+
+<details>
+<summary><b><code>'javac' no se reconoce como un comando</code> / <code>javac: command not found</code></b></summary>
+
+Java no está instalado o la terminal no lo encuentra.
+
+1. Revisa el [paso 1](#paso-1--instalar-java) y asegúrate de instalar el **JDK**, no solo el JRE.
+2. **Cierra y vuelve a abrir** la terminal después de instalar.
+3. En Windows, si sigue fallando: busca *"Editar las variables de entorno del sistema"* → *Variables de entorno* → en `Path` agrega la carpeta `bin` del JDK (por ejemplo `C:\Program Files\Eclipse Adoptium\jdk-17...\bin`).
+</details>
+
+<details>
+<summary><b><code>error: invalid source release</code> o errores con <code>record</code> / <code>switch</code></b></summary>
+
+Tienes una versión de Java anterior a la 17. Ejecuta `javac -version`; si sale 8 u 11, instala el JDK 17 o superior (paso 1).
+</details>
+
+<details>
+<summary><b><code>Address already in use</code> (el puerto 14080 está ocupado)</b></summary>
+
+Ya hay otra copia del programa corriendo, probablemente en otra ventana de la terminal. Ciérrala o presiona `Ctrl + C` allí.
+
+También puedes usar otro puerto con la variable `PORT`:
+
+```bash
+# Mac / Linux
+PORT=15080 ./run.sh
+
+# Windows (CMD)
+set PORT=15080
+run.bat
+```
+
+Y abre `http://localhost:15080`.
+</details>
+
+<details>
+<summary><b>La página sale en blanco o con error 404</b></summary>
+
+El programa no encuentra la carpeta `web/`. Ejecútalo **desde la carpeta raíz del proyecto** (donde están `run.bat` y `run.sh`). En el IDE, revisa que el *working directory* de la configuración de ejecución sea esa carpeta.
+</details>
+
+<details>
+<summary><b><code>Permission denied</code> al ejecutar <code>./run.sh</code></b></summary>
+
+Dale permisos de ejecución una sola vez:
+
+```bash
+chmod +x run.sh
+```
+</details>
+
+<details>
+<summary><b>Las tildes salen raras en la consola (<code>Sof?a</code>, <code>cl├ísica</code>)</b></summary>
+
+Es solo cómo la consola muestra los caracteres; la página web se ve bien. `run.bat` ya cambia la consola a UTF-8. Si lo ejecutas a mano en Windows, escribe antes `chcp 65001`.
+</details>
 
 ## 📁 Estructura del proyecto
 
